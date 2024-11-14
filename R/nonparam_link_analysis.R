@@ -6,7 +6,7 @@
 #' @param type1 the data type of first sample (can be interval, ordinal and nominal)
 #' @param type2 the data type of second sample (can be interval, ordinal and nominal)
 #' @return The score of a linkage (mostly p-value, can be also a z-score in Mann-Whitney Test, or correlation coefficient in Spearman Correlation Test)
-#' @examples 
+#' @examples
 #' result <- nonparam_link_analysis(c(1, 2, 3, 4, 5), c(6, 7, 8, 9, 10), "int", "ord")
 #' result <- nonparam_link_analysis(c("A", "A", "B", "C"), c(58, 70, 64, 19), "ord", "nom")
 #' @export
@@ -40,48 +40,35 @@ nonparam_link_analysis <- function(sample1, sample2, type1, type2)
     {
       if (type2 == "nom")
       {
-        
         df <- data.frame(
-          V1 = factor(sample1, levels = unique(sample1)),
-          V2 = factor(sample2, levels = unique(sample2))
+          V1 = sample1,
+          V2 = sample2
         )
         table_to_test <- table(df$V1, df$V2)
-        
-        if (any(as.vector(df) < 5)) {
-          result <- fisher.test(df)
+
+        if (any(as.vector(table_to_test) < 5)) {
+          result <- fisher.test(table_to_test)
         } else {
-          result <- chisq.test(df)
+          result <- chisq.test(table_to_test)
         }
       }
       else if (type2 == "ord")
       {
         df <- data.frame(
-          V1 = sample1,
-          V2 = factor(sample2, ordered = TRUE)
+          V1 = as.numeric(factor(sample1)),
+          V2 = factor(sample2)
         )
-        
-        table_to_test <- table(df$V1, df$V2)
-        
-        if (any(as.vector(df) < 5)) {
-          result <- fisher.test(df)
-        } else {
-          result <- chisq.test(df)
-        }
+
+        result <- kruskal.test(df$V1, df$V2)
       }
       else if (type2 == "int")
       {
         df <- data.frame(
-          V1 = sample1,
-          V2 = factor(sample2)
+          V1 = as.numeric(factor(sample1)),
+          V2 = sample2
         )
-        
-        table_to_test <- table(df$V1, df$V2)
-        
-        if (any(as.vector(df) < 5)) {
-          result <- fisher.test(df)
-        } else {
-          result <- chisq.test(df)
-        }
+
+        result <- kruskal.test(df$V1, df$V2)
       }
       else
       {
@@ -94,35 +81,28 @@ nonparam_link_analysis <- function(sample1, sample2, type1, type2)
       if (type2 == "nom")
       {
         df <- data.frame(
-          V1 = factor(sample1, ordered = TRUE),
-          V2 = sample2
+          V1 = as.numeric(factor(sample1)),
+          V2 = as.factor(sample2)
         )
-        
-        table_to_test <- table(df$V1, df$V2)
-        
-        if (any(as.vector(df) < 5)) {
-          result <- fisher.test(df)
-        } else {
-          result <- chisq.test(df)
-        }
+
+        result <- kruskal.test(df$V1, df$V2)
       }
       else if (type2 == "ord")
       {
-        
         df <- data.frame(
-          V1 = factor(sample1, levels = unique(sample1), ordered = TRUE),
-          V2 = factor(sample2, levels = unique(sample2), ordered = TRUE))
-        
-        result <- cor.test(as.numeric(df$V1), as.numeric(df$V2), method = "spearman")
+          V1 = as.numeric(factor(sample1, levels = unique(sample1))),
+          V2 = as.numeric(factor(sample2, levels = unique(sample2))))
+
+        result <- cor.test(df$V1, df$V2, method = "pearson")
       }
       else if (type2 == "int")
       {
-        
         df <- data.frame(
-          V1 = factor(sample1, ordered = TRUE),
-          V2 = sample2)
-        
-        result <- wilcox.test(as.numeric(df$V1), as.numeric(df$V2))
+          V1 = as.numeric(factor(sample1)),
+          V2 = factor(sample2)
+        )
+
+        result <- kruskal.test(df$V1, df$V2)
       }
       else
       {
@@ -135,37 +115,35 @@ nonparam_link_analysis <- function(sample1, sample2, type1, type2)
       if (type2 == "nom")
       {
         df <- data.frame(
-          V1 = factor(sample1),
+          V1 = sample1,
           V2 = sample2
         )
-        
+
         table_to_test <- table(df$V1, df$V2)
-        
-        if (any(as.vector(df) < 5)) {
-          result <- fisher.test(df)
+
+        if (any(as.vector(table_to_test) < 5)) {
+          result <- fisher.test(table_to_test)
         } else {
-          result <- chisq.test(df)
+          result <- chisq.test(table_to_test)
         }
       }
       else if (type2 == "ord")
       {
-        
         df <- data.frame(
           V1 = sample1,
-          V2 = factor(sample2, ordered = TRUE))
-        
-        result <- wilcox.test(as.numeric(df$V1), as.numeric(df$V2))
+          V2 = factor(sample2))
+
+        result <- kruskal.test(df$V1, df$V2)
       }
       else if (type2 == "int")
       {
         ## check for normality
-        
-        
+
         df <- data.frame(
           V1 = sample1,
           V2 = sample2)
-        
-        cor.test(df$V1, df$V2, method = "pearson")
+
+        result <- cor.test(df$V1, df$V2, method = "pearson")
       }
       else
       {
